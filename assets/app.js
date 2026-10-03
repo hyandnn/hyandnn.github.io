@@ -15,10 +15,13 @@
     else window.location.assign(href);
   }
   const languageLinks=[...document.querySelectorAll('[data-set-language]')];
-  for(const a of languageLinks)a.addEventListener('click',()=>{storage.set(a.dataset.setLanguage);if(window.location.hash)a.href+=window.location.hash;});
+  for(const a of languageLinks)a.addEventListener('click',()=>{storage.set(a.dataset.setLanguage);if(window.location.hash)a.href=a.href.split('#')[0]+window.location.hash;});
   const preferred=storage.get();
-  // Only explicit saved choices redirect; a shared language URL works on first visit.
-  if(preferred&&preferred!==language){const link=languageLinks.find(a=>a.dataset.setLanguage===preferred);if(link)navigateLanguage(link.getAttribute('href'));}
+  // A language-specific URL is authoritative. Only the default root uses a saved choice.
+  if(window.location.pathname==='/'&&(preferred==='en'||preferred==='zh')&&preferred!==language){
+    const link=languageLinks.find(a=>a.dataset.setLanguage===preferred);
+    if(link)navigateLanguage(link.getAttribute('href')+(window.location.search||'')+(window.location.hash||''));
+  }
 
   const boxHit = (dx,dy,dz,box,limit) => {
     let lo=0, hi=limit;
@@ -268,7 +271,7 @@
   }
   function drawMotionCover(scene){
     const {ctx,w,h}=scene,data=motionData(.42),accent='#c4aaff';grid(ctx,w,h);
-    text(ctx,tr('FIXED WALL / MOVING WINDOW','固定墙点 / 移动窗口'),20,27,accent,13);
+    text(ctx,tr('FIXED WALL / MOVING WINDOW','固定岩点 / 移动窗口'),20,27,accent,13);
     // A dedicated composition: full template and its current camera window.
     const wh=h-62,ww=wh/2.1,wx=w*.51-ww/2,wy=45,map=(x,y)=>[wx+x*ww,wy+(1-y)*wh];
     polygon(ctx,[[wx,wy],[wx+ww,wy],[wx+ww,wy+wh],[wx,wy+wh]],'#695d82','#c4aaff05');
