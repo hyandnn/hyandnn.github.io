@@ -1,4 +1,18 @@
-# Second-version validation
+# Portfolio validation record
+
+## System-level case studies (2026-10-03)
+
+- Editorial/layout refinement: replaced model-observation wording with model outputs, made homepage summaries concrete, clarified the established LiDAR framework and named the collision-query stages and climbing-analysis outputs in the profile. Project context and results use system subjects; contribution labels retain ownership.
+- Reduced repeated scope/result paragraphs while preserving all functional views and contribution cards. All six numbered sections now share a heading-above-content structure in both languages. Height illustrations label ground and upward height direction. These structure/source checks do not establish browser rendering.
+- Generated all twelve paired pages and checked headings, local references, fragment targets, language metadata and same-case language links.
+- Expanded homepage cards and case studies to cover system scope before individual contributions. The ground capability is separate from carpet recognition and supports plane-structure understanding, online calibration and point-cloud correction during bumpy motion.
+- Added three grouped functional views and the complete climbing research pipeline, plus an independent LiDAR height-structure illustration. Company views regroup responsibilities rather than reproduce implementation order or module boundaries.
+- Reviewed public copy for identifying employer/engine names, private code identifiers, unverified measurements and product-specific implementation details.
+- JavaScript syntax, canvas scene checks and state/language regressions passed. Existing covers and interactive illustrations were retained.
+- Responsive CSS stacks functional groups, contribution cards, research branches and height views on narrow screens. Browser rendering of this revision has not been verified: the available cloud browser rejects local-file previews. The offline HTML preview is available for review; the optional full-browser suite was not run. Earlier live-browser results below apply to the previous deployed revision.
+- Production publishing remains `main` → `/(root)`. These changes are proposed in a review branch, not deployed.
+
+## Earlier versions
 
 Completed locally:
 
@@ -28,7 +42,7 @@ Live deployment and desktop browser verification (2026-10-03):
 Remaining QA scope:
 
 - Narrow browser layouts were subsequently checked through actual site pages in 390px and 320px iframe viewports (see the repair verification below). Physical devices, Safari and assistive-technology behavior remain outside this session. `tools/check.mjs` is an optional full-browser suite and has not passed in the local environment.
-- After the website PR is merged, switch the Pages publishing branch from `portfolio/merci-site` to `main`, keeping `/(root)`.
+- The earlier website PR was merged and the Pages publishing branch was subsequently switched to `main`, keeping `/(root)`.
 
 Source and canvas checks are distinguished from actual browser checks. Synthetic illustrations are not product recordings or benchmark evidence.
 
