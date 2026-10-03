@@ -47,11 +47,43 @@ def demo(p, lang):
         for i,(title,description) in enumerate(p['panels']):
             content+=f'<figure class="phase"><canvas data-scene="{slug}" data-panel="{i}" role="img" aria-label="{escape(description)}"></canvas><figcaption><h3>{title}</h3><p>{description}</p></figcaption></figure>'
         content+='</div>';layers=[]
-    return f'''<div class="demo" data-demo="{slug}"><div class="demo-head"><span>{u['demo']} · {p['name']}</span><span>{u['synthetic']}</span></div>{content}{controls(lang,layers)}<p class="demo-caption">{p['caption']} {u['notice']}</p></div>'''
+    return f'''<div class="demo" data-demo="{slug}"><div class="demo-head"><span>{u['demo']}</span><span>{u['synthetic']}</span></div>{content}{controls(lang,layers)}<p class="demo-caption">{p['caption']}</p></div>'''
 
-def flow(p,lang):
-    title='Conceptual method' if lang=='en' else '概念流程'
-    return '<ol class="method-flow" aria-label="'+title+'">'+''.join(f'<li><span class="flow-index">0{i+1}</span><h3>{label}</h3><p>{desc}</p></li>' for i,(label,desc) in enumerate(p['flow']))+'</ol>'
+def functional_view(p,lang):
+    if p['slug']=='motion':
+        nodes={key:(title,desc) for key,title,desc in p['research_nodes']}
+        def node(key):
+            title,desc=nodes[key]
+            return f'<div class="research-node" data-research-node="{key}"><h3>{title}</h3><p>{desc}</p></div>'
+        badge='Pipeline designed & implemented' if lang=='en' else '流程设计与实现'
+        wall='Wall-reference observations' if lang=='en' else '墙面参考观测'
+        athlete='Athlete observations' if lang=='en' else '攀岩者观测'
+        return f'''<figure class="research-map" aria-label="{p['system_title']}"><figcaption class="map-caption"><span>{badge}</span></figcaption><div class="research-source">{node('video')}</div><div class="research-branches"><div class="research-path"><span class="path-label">{wall}</span>{node('holds')}{node('matching')}</div><div class="research-path"><span class="path-label">{athlete}</span>{node('pose')}</div></div><div class="research-merge">{node('mapping')}</div><div class="research-output">{node('analysis')}</div></figure>'''
+    groups=''
+    for i,(title,scope,nodes) in enumerate(p['groups']):
+        groups+=f'<div class="capability-group'+(' supporting' if i in (0,3) else '')+f'"><div class="group-heading"><h3>{title}</h3><span class="scope-badge">{scope}</span></div><ul>'+''.join(f'<li>{label}</li>' for label in nodes)+'</ul></div>'
+    return f'<div class="capability-board" role="group" aria-label="{p["system_title"]}">{groups}</div>'
+
+def height_view(lang):
+    en=lang=='en'
+    title='A footprint does not show the full height structure.' if en else '平面投影不能表达完整的高度结构。'
+    intro='Two illustrative structures share a similar plan-view footprint but occupy different heights.' if en else '两组示意结构具有相近的俯视投影，却分布在不同高度。'
+    grid=''.join(f'<path d="M {x} 22 V 204"/>' for x in range(30,381,35))+''.join(f'<path d="M 20 {y} H 390"/>' for y in range(29,205,35))
+    top_points=''.join(f'<circle cx="{125+(i%9)*20}" cy="{65+(i//9)*20}" r="3.1" fill="'+('#62e4d2' if i%2==0 else '#f3bf77')+'"/>' for i in range(45))
+    side_points=''.join(f'<circle cx="{125+i*20}" cy="{y+(i%3-1)*5}" r="3.1" fill="{color}"/>' for y,color in [(174,'#62e4d2'),(62,'#f3bf77')] for i in range(9))
+    top=f'<svg viewBox="0 0 410 225" role="img" aria-label="'+('Overlapping plan-view footprints' if en else '相近的平面投影')+f'"><g stroke="#253644" stroke-width="1">{grid}</g><rect x="109" y="48" width="194" height="116" rx="3" fill="#85bbff0d" stroke="#85bbff" stroke-dasharray="5 5"/>{top_points}</svg>'
+    ground='Ground' if en else '地面'
+    height='Height' if en else '高度'
+    side=f'<svg viewBox="0 0 410 245" role="img" aria-label="'+('Different vertical distributions above ground; height increases upward' if en else '地面以上的不同高度分布；向上为高度方向')+f'"><g stroke="#253644" stroke-width="1">{grid}</g><path d="M 40 194 H 374" stroke="#879cac" stroke-width="1.5"/><path d="M 54 178 V 56 M 48 65 L 54 56 L 60 65" fill="none" stroke="#a2b1bf" stroke-width="1.5"/><text x="68" y="111" fill="#bcc8d3" font-size="16">{height}</text><text x="329" y="219" fill="#bcc8d3" font-size="16">{ground}</text><rect x="109" y="47" width="194" height="142" rx="3" fill="#85bbff08" stroke="#486779" stroke-dasharray="5 5"/>{side_points}</svg>'
+    a='Plan view · overlapping footprint' if en else '俯视 · 相近投影'
+    b='Side view · different heights' if en else '侧视 · 不同高度'
+    legend='Cyan and amber identify two independent illustrative structures.' if en else '青色与橙黄色分别表示两组独立的示意结构。'
+    return f'<aside class="height-study"><div><h3>{title}</h3><p>{intro}</p></div><div class="height-grid"><figure>{top}<figcaption>{a}</figcaption></figure><figure>{side}<figcaption>{b}</figcaption></figure></div><p class="height-legend">{legend}</p></aside>'
+
+def story(index,label,title,content,anchor='',intro=''):
+    """One chapter layout for prose, functional views, contributions and scenes."""
+    introduction=f'<p>{intro}</p>' if intro else ''
+    return f'<section class="case-section"'+(f' id="{anchor}"' if anchor else '')+f'><div class="section-heading"><span class="story-index">{index:02d} / {label}</span><h2>{title}</h2>{introduction}</div><div class="section-content">{content}</div></section>'
 
 for lang in ['en','zh']:
     u=UI[lang]
@@ -70,11 +102,20 @@ for lang in ['en','zh']:
         route=local_route(lang,'projects/'+p['slug']+'.html')
         home=relative(local_route(lang,'index.html'),route)
         page=head(p['name']+' — Merci',p['summary'],route,lang)+header(route,lang)
-        page+=f'''<main id="main" class="{p['theme']}"><a class="back" href="{home}#work">{u['back']}</a><section class="case-head"><div class="eyebrow">{p['number']} / {p['name']}</div><h1>{p['title']}</h1><p class="lead">{p['lead']}</p><div class="case-meta"><div><span class="label">{u['role']}</span><p>{p['role']}</p></div><div><span class="label">{u['context']}</span><p>{p['context']}</p></div></div></section>'''+demo(p,lang)
-        for k,key in enumerate(['problem','method','choices','result']):
-            content=paragraphs(p[key]) if key!='choices' else '<div class="decision-grid">'+''.join(f'<div class="decision"><h3>{title}</h3><p>{copy}</p></div>' for title,copy in p['choices'])+'</div>'
-            if key=='method':content=flow(p,lang)+content
-            page+=f'<section class="story"><div class="story-index">0{k+1} / {u[key]}</div><div class="story-body"><h2>{p[key+"_title"]}</h2>{content}</div></section>'
+        contributions_label='My contribution' if lang=='en' else '我的贡献'
+        explore_label='Concept illustration' if lang=='en' else '概念示意'
+        limits_label='Technical boundaries' if lang=='en' else '技术边界'
+        page+=f'''<main id="main" class="{p['theme']}"><a class="back" href="{home}#work">{u['back']}</a><section class="case-head"><div class="eyebrow">{p['number']} / {p['name']}</div><h1>{p['title']}</h1><p class="lead">{p['lead']}</p><div class="case-meta"><div><span class="label">{u['role']}</span><p>{p['role']}</p></div><div><span class="label">{u['context']}</span><p>{p['context']}</p></div></div><nav class="case-jumps" aria-label="{'Case sections' if lang=='en' else '案例章节'}"><a href="#system">{u['method']}</a><a href="#contribution">{contributions_label}</a><a href="#illustration">{explore_label}</a><a href="#outcome">{u['result']}</a></nav></section>'''
+        page+=story(1,u['problem'],p['overview_title'],paragraphs(p['overview']))
+        page+=story(2,u['method'],p['system_title'],functional_view(p,lang),'system',p['system_intro'])
+        contributions='<div class="contribution-grid">'+''.join(f'<article class="contribution"><span class="contribution-role">{role}</span><h3>{title}</h3><p>{copy}</p></article>' for title,role,copy in p['contributions'])+'</div>'
+        page+=story(3,contributions_label,p['contribution_title'],contributions,'contribution')
+        choices='<div class="decision-grid">'+''.join(f'<div class="decision"><h3>{title}</h3><p>{copy}</p></div>' for title,copy in p['choices'])+'</div>'
+        if p['slug']=='lidar':choices+=height_view(lang)
+        page+=story(4,u['choices'],p['choices_title'],choices)
+        page+=story(5,explore_label,p['demo_title'],demo(p,lang),'illustration',p['demo_intro'])
+        page+=story(6,u['result'],p['result_title'],paragraphs(p['result'])+f'<div class="technical-boundary"><h3>{limits_label}</h3><p>{p["limits"]}</p></div>','outcome')
+        page+=f'<p class="notice case-notice">{u["notice"]}</p>'
         prev,nxt=projects[(i-1)%4],projects[(i+1)%4]
         page+=f'''<div class="case-nav"><div><small>{u['previous']}</small><a href="{prev['slug']}.html">{prev['name']}</a></div><div><small>{u['next']}</small><a href="{nxt['slug']}.html">{nxt['name']}</a></div></div></main>'''+footer(lang)
         (ROOT/route).parent.mkdir(parents=True,exist_ok=True);(ROOT/route).write_text(page)
