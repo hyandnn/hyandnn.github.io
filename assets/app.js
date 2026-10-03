@@ -7,7 +7,7 @@
   const scenes = [];
   const language = document.documentElement?.dataset.language === 'zh' ? 'zh' : 'en';
   const tr = (en,zh) => language==='zh'?zh:en;
-  const canvasFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei","Source Han Sans SC","Noto Sans SC","Noto Sans CJK SC",sans-serif';
+  const canvasFont = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Microsoft YaHei","Source Han Sans SC","Noto Sans SC","Noto Sans CJK SC",sans-serif';
   // Preferences are best-effort: local previews can block browser storage.
   const storage = { get(){try{return localStorage.getItem('merci-language');}catch{return null;}}, set(v){try{localStorage.setItem('merci-language',v);}catch{}} };
   function navigateLanguage(href){
@@ -95,7 +95,7 @@
     const preview=h<290;
     let scale,cx,cy;
     if(kind==='stereo'){scale=Math.min((pw-38)/7.4,(h-70)/6.6);cx=left+pw/2;cy=h-22;}
-    else{scale=Math.min((pw-40)/8.4,(h-70)/8.4);cx=left+pw/2;cy=(h+32)/2;}
+    else{scale=Math.min((pw-40)/8.4,(h-(preview?50:70))/8.4);cx=left+pw/2;cy=(h+32)/2;}
     const map=(x,y)=>[cx+x*scale,cy-y*scale];
     ctx.save();ctx.beginPath();ctx.rect(left+1,45,pw-2,h-46);ctx.clip();
     for(let x=-4;x<=4;x++){line(ctx,[map(x,kind==='stereo'?0:-4),map(x,kind==='stereo'?6:4)],colors.grid);}
@@ -146,6 +146,25 @@
       robot(ctx,map,colors.text);
       if(!preview){const [x,y]=map(-2.8,-1.5);text(ctx,tr('Height structure','高度结构'),Math.max(left+10,x-18),y+24,colors.gold,13);}
     }
+  }
+  function drawLidarCover(scene){
+    const {ctx,w,h,t}=scene,data=lidarData(t),leftWidth=w*.56;
+    drawLidar({...scene,w:leftWidth,preview:true});
+    const x0=leftWidth+12,y0=50,bw=w-x0-20,bh=h-y0-22;
+    text(ctx,tr('TARGET DETAIL','目标局部'),x0,27,colors.blue,13);
+    const scale=Math.min(bw,bh)/1.6,map=(x,y)=>[x0+bw/2+(x-data.target[0])*scale,y0+bh/2-(y-data.target[1])*scale];
+    ctx.save();ctx.beginPath();ctx.rect(x0,y0,bw,bh);ctx.clip();
+    ctx.fillStyle='#111e2b';ctx.fillRect(x0,y0,bw,bh);
+    const trail=[];for(let k=90;k>=0;k--)trail.push(map(...targetAt(t-k*.002)));
+    line(ctx,trail,'#729bc2',2.5);
+    for(const ray of data.rays)if(ray.object?.id==='target')dot(ctx,...map(ray.x,ray.y),colors.blue,2.4);
+    const [tx,ty]=map(...data.target),radius=.33*scale;
+    ctx.strokeStyle=colors.blue;ctx.lineWidth=2;ctx.setLineDash(data.visible?[]:[4,4]);ctx.strokeRect(tx-radius,ty-radius,radius*2,radius*2);ctx.setLineDash([]);
+    ctx.restore();
+    line(ctx,[[x0,y0],[x0+bw,y0],[x0+bw,y0+bh],[x0,y0+bh],[x0,y0]],'#344b61');
+    // The inset enlarges the same target returns and track, without inventing measurements.
+    const mainScale=Math.min((leftWidth-40)/8.4,(h-50)/8.4),a=[leftWidth/2+data.target[0]*mainScale,(h+32)/2-data.target[1]*mainScale];
+    line(ctx,[[a[0]+15,a[1]],[x0,y0+bh/2]],'#729bc288',1,[3,4]);
   }
   function drawHero(scene){
     const {ctx,w,h}=scene;
@@ -271,13 +290,17 @@
   }
   function drawMotionCover(scene){
     const {ctx,w,h}=scene,data=motionData(.42),accent='#c4aaff';grid(ctx,w,h);
-    text(ctx,tr('FIXED WALL / MOVING WINDOW','固定岩点 / 移动窗口'),20,27,accent,13);
-    // A dedicated composition: full template and its current camera window.
-    const wh=h-62,ww=wh/2.1,wx=w*.51-ww/2,wy=45,map=(x,y)=>[wx+x*ww,wy+(1-y)*wh];
+    text(ctx,tr('FRAME → FIXED TEMPLATE','画面 → 固定模板'),20,27,accent,13);
+    // Enlarge the local frame and its correspondences to the unchanged wall reference.
+    const wh=h-62,ww=Math.min(w*.27,wh/1.5),wx=w*.77-ww/2,wy=45,map=(x,y)=>[wx+x*ww,wy+(1-y)*wh];
+    const fw=w*.37,fh=Math.min(h-85,fw*.72),fx=20,fy=45+(wh-fh)/2,localMap=(x,y)=>[fx+x*fw,fy+(1-y)*fh];
     polygon(ctx,[[wx,wy],[wx+ww,wy],[wx+ww,wy+wh],[wx,wy+wh]],'#695d82','#c4aaff05');
     for(const p of data.holds)dot(ctx,...map(p.x,p.y),data.visible.some(v=>v.id===p.id)?colors.gold:'#7e7193',2.6);
     const q=data.window;polygon(ctx,[map(q.x,q.y),map(q.x+q.w,q.y),map(q.x+q.w,q.y+q.h),map(q.x,q.y+q.h)],accent,'#c4aaff15');
-    drawPose(ctx,map,data.pose,1.8);
+    polygon(ctx,[[fx,fy],[fx+fw,fy],[fx+fw,fy+fh],[fx,fy+fh]],accent,'#c4aaff0a');
+    for(const p of data.visible)dot(ctx,...localMap(...data.local([p.x,p.y])),colors.gold,3.2);
+    for(const p of data.matches)line(ctx,[localMap(...data.local([p.x,p.y])),map(p.x,p.y)],'#b49a6590',1.2,[3,4]);
+    drawPose(ctx,(x,y)=>localMap(...data.local([x,y])),data.pose,2.2);
     const [px,py]=map(.97,q.y+q.h/2);line(ctx,[[px+12,py+14],[px+12,py-18]],accent,1.4);line(ctx,[[px+9,py-15],[px+12,py-18],[px+15,py-15]],accent,1.4);
   }
   function render(scene){
@@ -287,7 +310,7 @@
     if(scene.canvas.width!==bw||scene.canvas.height!==bh){scene.canvas.width=bw;scene.canvas.height=bh;}
     scene.ctx.setTransform(ratio,0,0,ratio,0,0);scene.ctx.clearRect(0,0,scene.w,scene.h);
     scene.t=scene.group?scene.group.t:scene.t;
-    const draw={hero:drawHero,stereo:drawStereo,lidar:drawLidar,collision:drawCollision,motion:drawMotion,'stereo-cover':drawStereoCover,'lidar-cover':drawLidar,'collision-cover':drawCollision,'motion-cover':drawMotionCover}[scene.kind];
+    const draw={hero:drawHero,stereo:drawStereo,lidar:drawLidar,collision:drawCollision,motion:drawMotion,'stereo-cover':drawStereoCover,'lidar-cover':drawLidarCover,'collision-cover':drawCollision,'motion-cover':drawMotionCover}[scene.kind];
     if(draw)draw(scene);
   }
   function setPlaying(group,playing){

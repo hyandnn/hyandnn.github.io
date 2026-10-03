@@ -5,9 +5,12 @@ GlobalFonts.registerFromPath('/usr/share/fonts/opentype/urw-base35/NimbusSans-Re
 const root=path.resolve(process.argv[2]||'.'),out=path.resolve(process.argv[3]||'qa');fs.mkdirSync(out,{recursive:true});
 const calls=[];
 const mockDocument={querySelectorAll:()=>[],hidden:false};
-const context={document:mockDocument,window:{matchMedia:()=>({matches:false,addEventListener(){}}),devicePixelRatio:1},ResizeObserver:class{observe(){}},IntersectionObserver:class{observe(){}},requestAnimationFrame(){}};
+// Match the ordinary browser surface used by the app, even in canvas-only checks.
+const mockWindow={matchMedia:()=>({matches:false,addEventListener(){}}),devicePixelRatio:1,location:{pathname:'/index.html',search:'',hash:'',assign(){throw new Error('Canvas checks should not navigate');}}};
+mockWindow.parent=mockWindow;
+const context={document:mockDocument,window:mockWindow,ResizeObserver:class{observe(){}},IntersectionObserver:class{observe(){}},requestAnimationFrame(){}};
 vm.createContext(context);
-const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8').replace(/\}\)\(\);\s*$/, 'globalThis.qa={stereoData,lidarData,rayHit,drawStereo,drawLidar,drawHero,drawStereoCover,drawMotionCover,drawMotion,drawCollision,motionData,climberAt,speedAt,setPlaying,render};})();');
+const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8').replace(/\}\)\(\);\s*$/, 'globalThis.qa={stereoData,lidarData,rayHit,drawStereo,drawLidar,drawHero,drawStereoCover,drawLidarCover,drawMotionCover,drawMotion,drawCollision,motionData,climberAt,speedAt,setPlaying,render};})();');
 vm.runInContext(src,context);const qa=context.qa;
 function assert(ok,message){if(!ok)throw new Error(message);}
 // Independent geometric checks: free space is not a return, and first surfaces occlude farther ones.
@@ -34,7 +37,7 @@ for(const t of [0,.13,.42,.78,1]){
  const eps=1e-6,a=qa.climberAt(t-eps),b=qa.climberAt(t+eps);assert(Math.abs(Math.hypot(b[0]-a[0],b[1]-a[1])/(2*eps*12)-qa.speedAt(t))<1e-7,'Speed not derived from same trajectory');
 }
 for(const width of [540,348,280]){
- for(const [kind,draw] of [['stereo',qa.drawStereoCover],['lidar',qa.drawLidar],['collision',qa.drawCollision],['motion',qa.drawMotionCover]]){
+ for(const [kind,draw] of [['stereo',qa.drawStereoCover],['lidar',qa.drawLidarCover],['collision',qa.drawCollision],['motion',qa.drawMotionCover]]){
   const canvas=createCanvas(width,225),ctx=canvas.getContext('2d');ctx.fillStyle='#0e151e';ctx.fillRect(0,0,width,225);draw({ctx,w:width,h:225,t:.25,panel:0,preview:true,layers:{points:true,geometry:true,rays:true,tracks:true}});fs.writeFileSync(path.join(out,`${kind}-cover-${width}.png`),canvas.toBuffer('image/png'));
  }
  for(const kind of ['collision','motion'])for(let panel=0;panel<3;panel++){
