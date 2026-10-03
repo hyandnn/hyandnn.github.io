@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Merci — responsive review</title>
+<style>
+  body{margin:24px;background:#171c23;color:#edf3f6;font:16px Arial,sans-serif}
+  h1{font-size:22px}label{display:block;margin-bottom:22px}select{font:inherit;margin-left:12px;padding:8px}
+  .viewports{display:flex;gap:30px;align-items:flex-start;flex-wrap:wrap}
+  figure{margin:0}figcaption{margin-bottom:12px}iframe{display:block;height:844px;border:0;outline:1px solid #526779}
+</style>
+<h1>Responsive review</h1>
+<p>Actual site pages in 390px and 320px browser viewports. This is a development review tool, not a physical-device test.</p>
+<label>Page<select id="page">
+  <option value="index.html">English homepage</option><option value="zh/index.html">Chinese homepage</option>
+  <option value="projects/stereo.html">English stereo</option><option value="zh/projects/stereo.html">Chinese stereo</option>
+  <option value="projects/lidar.html">English LiDAR</option><option value="zh/projects/lidar.html">Chinese LiDAR</option>
+  <option value="projects/collision.html">English collision</option><option value="zh/projects/collision.html">Chinese collision</option>
+  <option value="projects/motion.html">English climbing</option><option value="zh/projects/motion.html">Chinese climbing</option>
+</select></label>
+<div class="viewports">
+  <figure><figcaption>390px × 844px</figcaption><iframe title="390px viewport" width="390" src="../index.html"></iframe></figure>
+  <figure><figcaption>320px × 844px</figcaption><iframe title="320px viewport" width="320" src="../index.html"></iframe></figure>
+</div>
+<script>document.getElementById('page').addEventListener('change',event=>{for(const frame of document.querySelectorAll('iframe'))frame.src='../'+event.target.value;});</script>
+</html>
