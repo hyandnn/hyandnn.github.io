@@ -2,8 +2,10 @@
 from pathlib import Path
 from html import escape
 import os
+import hashlib
 from content import UI, PROJECTS, PROJECT_META
 ROOT = Path(__file__).resolve().parents[1]
+ASSET_VERSIONS = {name: hashlib.sha256((ROOT/'assets'/name).read_bytes()).hexdigest()[:12] for name in ['style.css','app.js']}
 
 def relative(target, route):
     return os.path.relpath(ROOT / target, (ROOT / route).parent).replace(os.sep, '/')
@@ -15,7 +17,7 @@ def head(title, description, route, lang):
     prefix = relative('assets', route) + '/'
     language = 'zh-CN' if lang == 'zh' else 'en'
     alternate = route[3:] if lang == 'zh' else 'zh/' + route
-    return f'''<!doctype html><html lang="{language}" data-route="{route}" data-language="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><title>{escape(title)}</title><meta name="description" content="{escape(description, quote=True)}"><link rel="alternate" hreflang="{'en' if lang=='zh' else 'zh-CN'}" href="{relative(alternate,route)}"><link rel="icon" type="image/svg+xml" href="{prefix}favicon.svg"><link rel="stylesheet" href="{prefix}style.css"><script src="{prefix}app.js" defer></script></head><body><a class="skip" href="#main">{UI[lang]['skip']}</a>'''
+    return f'''<!doctype html><html lang="{language}" data-route="{route}" data-language="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><title>{escape(title)}</title><meta name="description" content="{escape(description, quote=True)}"><link rel="alternate" hreflang="{'en' if lang=='zh' else 'zh-CN'}" href="{relative(alternate,route)}"><link rel="icon" type="image/svg+xml" href="{prefix}favicon.svg"><link rel="stylesheet" href="{prefix}style.css?v={ASSET_VERSIONS['style.css']}"><script src="{prefix}app.js?v={ASSET_VERSIONS['app.js']}" defer></script></head><body><a class="skip" href="#main">{UI[lang]['skip']}</a>'''
 
 def header(route, lang):
     u=UI[lang]; home=relative(local_route(lang,'index.html'),route)

@@ -13,8 +13,8 @@ for f in [root/'index.html', root/'404.html', *sorted((root/'projects').glob('*.
     prefix = os.path.relpath(root/'assets',f.parent).replace(os.sep,'/')+'/'
     css = (root/'assets/style.css').read_text()
     js = (root/'assets/app.js').read_text()
-    page = page.replace(f'<link rel="stylesheet" href="{prefix}style.css">', '<style>'+css+'</style>')
-    page = page.replace(f'<script src="{prefix}app.js" defer></script>', '<script>'+js+'</script>')
+    page = re.sub(r'<link rel="stylesheet" href="'+re.escape(prefix)+r'style\.css(?:\?[^\"]*)?">', lambda _: '<style>'+css+'</style>', page)
+    page = re.sub(r'<script src="'+re.escape(prefix)+r'app\.js(?:\?[^\"]*)?" defer></script>', lambda _: '<script>'+js+'</script>', page)
     for asset in (root/'assets').iterdir():
         if asset.suffix in ['.png','.gif','.svg']:
             data='data:'+mimetypes.guess_type(asset)[0]+';base64,'+base64.b64encode(asset.read_bytes()).decode()
