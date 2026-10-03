@@ -31,3 +31,12 @@ Remaining QA scope:
 - After the website PR is merged, switch the Pages publishing branch from `portfolio/merci-site` to `main`, keeping `/(root)`.
 
 Source and canvas checks are distinguished from actual browser checks. Synthetic illustrations are not product recordings or benchmark evidence.
+
+## Language and editorial refinement (2026-10-03)
+
+- Explicit English/Chinese URLs now take precedence over the saved preference. Only `/` uses a valid saved choice; `/index.html` remains explicit English. Root redirects and manual language switches preserve URL fragments.
+- Behavior regressions cover all twelve explicit routes with an opposite saved preference, both valid root preferences, no preference, invalid preference, fragment preservation and the existing playback checks.
+- All twelve generated pages passed heading and local-reference checks. Chinese pages contain neither the old climbing-hold term nor the mixed-language LiDAR project title.
+- Live verification: an English choice followed by a direct Chinese climbing-case URL stayed Chinese; a Chinese choice followed by a direct English stereo-case URL stayed English. The default root honored both preferences. Same-case switching and `#work` preservation passed.
+- The updated Chinese homepage was visually inspected at desktop width; the title fits its two-line layout without horizontal page overflow.
+- Outcomes in both languages now state the concrete added representation, cross-frame state, selectable query options or shared wall reference. No unverified metrics or publication links were added.
