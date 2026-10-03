@@ -18,9 +18,11 @@ This website lives at the root of the public `hyandnn/hyandnn.github.io` reposit
 
 ## Interaction and accessibility
 
-The EN / 中文 switch preserves the current case and URL fragment, and remembers explicit choices when browser storage is available. Explicit language-specific URLs take priority over saved preferences. Only the default root entrance (`/`) uses a saved language preference; `/index.html` is an explicit English homepage and `/zh/index.html` an explicit Chinese homepage. Ordinary navigation works without JavaScript. English and Chinese page metadata are generated independently. Both languages use system fonts, including SF / Segoe UI and Chinese sans-serif fallbacks.
+The EN / 中文 switch preserves the current case and URL fragment, and remembers explicit choices when browser storage is available. Explicit language-specific URLs take priority over saved preferences. Only the default root entrance (`/`) uses a saved language preference; `/index.html` is an explicit English homepage and `/zh/index.html` an explicit Chinese homepage. Ordinary navigation works without JavaScript. English and Chinese page metadata are generated independently. Both languages use system fonts, including SF / Segoe UI, Helvetica Neue / Arial for Western glyphs, and Chinese sans-serif fallbacks. The Western fallbacks precede Chinese families so English punctuation retains proportional spacing.
 
 All four case illustrations support playback and time scrubbing, starting paused. Stereo and LiDAR also have layer switches. The collision and climbing phase panels share one clock; desktop layouts are horizontal, narrow layouts vertical. At the end of a scan, replay restarts on request. Reduced-motion preferences are respected. Navigation and controls support keyboard operation.
+
+For narrow-layout review, open `tools/responsive-review.html` on the published site. It loads the actual homepage and cases in 390px and 320px iframe viewports, with a page selector. This checks browser layout and interactions at those widths; it is not a physical-device test.
 
 ## Diagram model
 

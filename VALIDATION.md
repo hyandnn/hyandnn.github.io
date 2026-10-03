@@ -27,7 +27,7 @@ Live deployment and desktop browser verification (2026-10-03):
 
 Remaining QA scope:
 
-- Narrow-width canvas compositions were rendered and inspected locally, but actual mobile-browser layout and accessibility/reduced-motion preferences have not been rechecked in this cloud browser session. `tools/check.mjs` is an optional full-browser suite and has not passed in the local environment.
+- Narrow browser layouts were subsequently checked through actual site pages in 390px and 320px iframe viewports (see the repair verification below). Physical devices, Safari and assistive-technology behavior remain outside this session. `tools/check.mjs` is an optional full-browser suite and has not passed in the local environment.
 - After the website PR is merged, switch the Pages publishing branch from `portfolio/merci-site` to `main`, keeping `/(root)`.
 
 Source and canvas checks are distinguished from actual browser checks. Synthetic illustrations are not product recordings or benchmark evidence.
@@ -40,3 +40,12 @@ Source and canvas checks are distinguished from actual browser checks. Synthetic
 - Live verification: an English choice followed by a direct Chinese climbing-case URL stayed Chinese; a Chinese choice followed by a direct English stereo-case URL stayed English. The default root honored both preferences. Same-case switching and `#work` preservation passed.
 - The updated Chinese homepage was visually inspected at desktop width; the title fits its two-line layout without horizontal page overflow.
 - Outcomes in both languages now state the concrete added representation, cross-frame state, selectable query options or shared wall reference. No unverified metrics or publication links were added.
+
+## QA mock, typography and cover repair (2026-10-03)
+
+- Reproduced and fixed the canvas script crash: its mock window now includes location and a consistent parent window. JavaScript syntax, canvas geometry/scene checks and state/language regression checks passed.
+- Let’s contains no extra space. In the cloud browser, the curly apostrophe occupied about 43px at the desktop heading size. Adding Helvetica Neue / Arial before Chinese font fallbacks reduced the same glyph to 9px while preserving the typographic apostrophe. The repaired heading was visually inspected.
+- LiDAR cover now enlarges the same target returns and track in a local inset. Climbing cover enlarges the local frame, pose and its correspondences to the fixed wall template. Native canvas covers were rendered and inspected at narrow and desktop widths.
+- CSS and JavaScript references include content hashes, preventing previous versions in browser caches from masking a deployed update. All twelve generated routes and local references passed; the offline preview still embeds assets without remote runtime dependencies.
+- Live narrow-layout checks used tools/responsive-review.html, which loads actual site pages in 390px and 320px iframe browser viewports. Both homepages and all eight case pages passed at both widths (20 layouts), with no horizontal document overflow. Collision/climbing panels used a single column. Climbing scrubbing, playback/pause and same-case language switching passed at 390px.
+- This is live browser layout verification at phone-sized widths, not a physical-phone or Safari test.
